@@ -1,16 +1,51 @@
-import * as cdk from 'aws-cdk-lib';
-import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import * as cdk from "aws-cdk-lib";
+import * as ec2 from "aws-cdk-lib/aws-ec2";
+import * as rds from "aws-cdk-lib/aws-rds";
 
-export class CdkPostgresJsStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);
+export class DatabaseStack extends cdk.Stack {
+  constructor(scope: cdk.App, id: string) {
+    super(scope, id);
 
-    // The code that defines your stack goes here
+    const vpc = new ec2.Vpc(this, "PostgresVPC", {
+      cidr: "10.0.0.0/16",
+      maxAzs: 3,
+      subnetConfiguration: [
+        {
+          cidrMask: 24,
+          name: "private-subnet-1",
+          subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+        },
+      ],
+    });
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'CdkPostgresJsQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    const dbSG = new ec2.SecurityGroup(this, "PostgresSG", {
+      vpc: vpc,
+      allowAllOutbound: true,
+      description: "security group for the database server",
+    });
+
+    dbSG.addIngressRule(
+        ec2.Peer.ipv4(vpc.vpcCidrBlock),
+        ec2.Port.tcp(5432),
+        "allow PostgreSQL access from within VPC"
+    );
+
+    new rds.DatabaseInstance(this, "PostgresDB", {
+      vpc: vpc,
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+      },
+      securityGroups: [dbSG],
+      engine: rds.DatabaseInstanceEngine.postgres({
+        version: rds.PostgresEngineVersion.VER_13_3,
+      }),
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T2, ec2.InstanceSize.MICRO),
+      credentials: rds.Credentials.fromGeneratedSecret("root"),
+      backupRetention: cdk.Duration.days(30),
+      deleteAutomatedBackups: true,
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
+      deletionProtection: true,
+      publiclyAccessible: false,
+    });
   }
 }

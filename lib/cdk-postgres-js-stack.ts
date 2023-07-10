@@ -37,9 +37,9 @@ export class DatabaseStack extends cdk.Stack {
       },
       securityGroups: [dbSG],
       engine: rds.DatabaseInstanceEngine.postgres({
-        version: rds.PostgresEngineVersion.VER_15_3,
+        version: rds.PostgresEngineVersion.VER_15,
       }),
-      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T2, ec2.InstanceSize.MICRO),
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MICRO),
       credentials: rds.Credentials.fromGeneratedSecret("root"),
       backupRetention: cdk.Duration.days(30),
       deleteAutomatedBackups: true,

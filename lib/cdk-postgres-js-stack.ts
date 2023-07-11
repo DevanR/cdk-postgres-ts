@@ -42,9 +42,9 @@ export class DatabaseStack extends cdk.Stack {
       instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MICRO),
       credentials: rds.Credentials.fromGeneratedSecret("root"),
       backupRetention: cdk.Duration.days(30),
-      deleteAutomatedBackups: true,
+      deleteAutomatedBackups: false,
       removalPolicy: cdk.RemovalPolicy.RETAIN,
-      deletionProtection: true,
+      deletionProtection: false,
       publiclyAccessible: false,
     });
   }

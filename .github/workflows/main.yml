@@ -44,8 +44,8 @@ jobs:
           #- name: Bootstrap environment
           #  run: npx cdk bootstrap
 
-        #- name: Deploy
-        #  run: npx cdk deploy --require-approval never
+    - name: Deploy
+      run: npx cdk deploy --require-approval never
         
     - name: Destroy
       run: npx cdk destroy --require-approval never
